@@ -21,19 +21,19 @@
                                    </div>
                                    <t t-if="mode == 'registered'">
                                        <div class="form-group col-xl-6">
-                                           <label class="control-label" for="name">Your Name</label>
+                                           <label class="control-label" for="name">Nama</label>
                                            <div>
                                                <input type="text" class="form-control" readonly="True" name="name" t-att-value="name"/>
                                            </div>
                                        </div>
                                        <div class="form-group col-xl-6">
-                                           <label class="control-label" for="name">Your Email</label>
+                                           <label class="control-label" for="name">Email</label>
                                            <div>
                                                <input type="text" class="form-control" name="email" readonly="True" t-att-value="email"/>
                                            </div>
                                        </div>
                                        <div class="form-group col-xl-6">
-                                           <label class="control-label" for="name">Your Phone</label>
+                                           <label class="control-label" for="name">No Handphone</label>
                                            <div>
                                                <input type="text" class="form-control" name="phone" readonly="True" t-att-value="phone"/>
                                            </div>
@@ -41,19 +41,19 @@
                                    </t>
                                    <t t-else="">
                                        <div t-attf-class="form-group #{error.get('name') and 'o_has_error' or ''} col-xl-6">
-                                           <label class="control-label" for="name">Your Name</label>
+                                           <label class="control-label" for="name">Nama</label>
                                            <div>
                                                <input type="text" name="name" t-attf-class="form-control #{error.get('name') and 'is-invalid' or ''}" t-att-value="name" required="True" />
                                            </div>
                                        </div>
                                        <div t-attf-class="form-group #{error.get('email') and 'o_has_error' or ''} col-xl-6">
-                                           <label class="control-label" for="email">Your Email</label>
+                                           <label class="control-label" for="email">Email</label>
                                            <div>
                                                <input type="text" name="email" t-attf-class="form-control #{error.get('email') and 'is-invalid' or ''}" t-att-value="email" required="True" />
                                            </div>
                                        </div>
                                        <div t-attf-class="form-group #{error.get('phone') and 'o_has_error' or ''} col-xl-6">
-                                           <label class="control-label" for="phone">Your Phone</label>
+                                           <label class="control-label" for="phone">No Handphone</label>
                                            <div>
                                                <input type="text" name="phone" t-attf-class="form-control #{error.get('phone') and 'is-invalid' or ''}" t-att-value="phone" required="True" />
                                            </div>
@@ -61,7 +61,7 @@
                                    </t>
                                    <div class="form-group col-xl-6"></div>
                                    <div class="form-group col-xl-6">
-                                       <label class="control-label" for="appointment_option">Subject</label>
+                                       <label class="control-label" for="appointment_option">Booking</label>
                                        <div>
                                            <select id="appointment_option_id" required="True" name="appointment_option_id" class="form-control">
                                                <option value="">Select</option>
@@ -74,10 +74,10 @@
                                        </div>
                                    </div>
                                    <div class="form-group col-xl-6">
-                                       <label class="control-label" for="appointee_id">With</label>
+                                       <label class="control-label" for="appointee_id">Therapist</label>
                                        <div>
                                            <select id="appointee_id" required="True" name="appointee_id" class="form-control">
-                                               <option value="">Select</option>
+                                               <option value="">Pilih</option>
                                                <t t-foreach="appointees" t-as="o">
                                                    <option t-att-value="o.id" t-att-selected="o.id == appointee_id">
                                                        <t t-esc="o.name" />
@@ -87,7 +87,7 @@
                                        </div>
                                    </div>
                                    <div t-attf-class="form-group #{error and 'appointment_date' in error and 'has-error' or ''} col-xl-6">
-                                       <label class="control-label" for="appointment_date">Appointment Date</label>
+                                       <label class="control-label" for="appointment_date">Tanggal Booking</label>
                                        <div>
                                            <div class='input-group date'>
                                                <input id ="appointment_date" name="appointment_date"  class="form-control datepicker" required="True" placeholder="dd/mm/yyyy" t-att-value="appointment_date"/>
@@ -95,10 +95,10 @@
                                        </div>
                                    </div>
                                    <div class="form-group col-xl-6">
-                                       <label class="control-label" for="timeslot_id">Timeslot</label>
+                                       <label class="control-label" for="timeslot_id">Jam</label>
                                        <div>
                                            <select id="timeslot_id" required="True" name="timeslot_id" class="form-control">
-                                               <option value="">Select</option>
+                                               <option value="">Pilih</option>
                                                <t t-foreach="timeslots" t-as="t">
                                                    <option t-att-value="t['id']" t-att-selected="t['id'] == timeslot_id">
                                                        <t t-esc="t['timeslot']" />
@@ -108,7 +108,7 @@
                                        </div>
                                    </div>
                                    <div class="form-group col-lg-12">
-                                       <label class="control-label" for="remarks">Remarks</label>
+                                       <label class="control-label" for="remarks">Catatan</label>
                                        <div>
                                            <textarea class="form-control" cols="60" name="remarks" rows="6"><t t-esc="remarks"/></textarea>
                                        </div>
@@ -116,7 +116,7 @@
 
                                    <div class="form-group col-lg-12">
                                        <div>
-                                           <button class="btn btn-success">Submit</button>
+                                           <button class="btn btn-success">Booking</button>
                                        </div>
                                    </div>
                                </div>

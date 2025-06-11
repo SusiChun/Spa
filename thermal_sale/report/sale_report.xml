@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- QWeb Reports -->
+
+        <report
+                id="sale_invoice_small"
+                model="sale.order"
+                string="Thermal Sale"
+                report_type="qweb-pdf"
+                name="thermal_sale.report_small_invoice"
+                file="thermal_sale.report_small_invoice"
+                attachment="(object.state in ('open','paid')) and ('SO'+(object.number or '').replace('/','')+'.pdf')"
+                paperformat='thermal_sale.paper_format_small'
+                print_report_name="'Small %s' %(object._get_report_base_filename())"
+        />
+    </data>
+</odoo>
+
