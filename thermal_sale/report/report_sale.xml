@@ -5,7 +5,7 @@
             <t t-call="thermal_sale.small_external_layout">
                 <t t-set="o" t-value="o.with_context(lang=lang)"/>
                 <div class="page"
-                     style="margin-top:10px;text-align: left;width: 400px;background-color: white;font-size: 14px;display: solid 1px rgb(220,220,220);">
+                     style="margin-top:10px;text-align: left;width: 400px;background-color: white;font-size: 21px;display: solid 1px rgb(220,220,220);">
                     <t t-if="not o and doc">
                         <t t-set="o" t-value="doc"/>
                     </t>
@@ -38,7 +38,7 @@
                             </tr>
                         </table>
                     </div>
-                    <table style="border-bottom:1pt dashed black;margin-top:5pt;padding:5pt;font-size:9pt">
+                    <table style="border-bottom:1pt dashed black;margin-top:5pt;padding:5pt;font-size:14pt">
                         <colgroup>
                             <col width='24%'/>
                             <col width='1%'/>
@@ -80,7 +80,7 @@
                             </td>
                         </tr>
                     </table>
-                    <table style="margin-top:5pt;padding:5pt;border-bottom:1pt dashed black;font-size:9pt">
+                    <table style="margin-top:5pt;padding:5pt;border-bottom:1pt dashed black;font-size:14pt">
                         <colgroup>
                             <col width='28%'/>
                             <col width='30%'/>
@@ -121,7 +121,7 @@
                             </td>
                         </tr>
                     </table>
-                    <table style="border-bottom:1pt dashed black;font-size:9pt" class='receipt-total'>
+                    <table style="border-bottom:1pt dashed black;font-size:14pt" class='receipt-total'>
                         <colgroup>
                             <col width='24%'/>
                             <col width='1%'/>
