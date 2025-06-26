@@ -7,7 +7,6 @@
       <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
       <field name="priority" eval="20"/>
       <field name="arch" type="xml">
-          <xpath expr="//field/[@name='partner_id']" position="replace"/>
             <field name="name" position="after">
                 <field name="therapist_id"/>
                 <field name="start_hour"/>
@@ -24,7 +23,6 @@
       <field name="inherit_id" ref="sale.view_order_tree"/>
       <field name="priority" eval="20"/>
       <field name="arch" type="xml">
-          <xpath expr="//field/[@name='partner_id']" position="replace"/>
             <field name="name" position="after">
                 <field name="therapist_id"/>
                 <field name="start_hour"/>
