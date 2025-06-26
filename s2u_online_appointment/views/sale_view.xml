@@ -43,8 +43,8 @@
         <!-- Hapus elemen -->
         <xpath expr="//header//button[@name='action_quotation_send']" position="replace"/>
         <field name="date_order" position="after">
-            <field name="start_hour"/>
-            <field name="end_hour"/>
+            <field name="start_hour" widget="float_time"/>
+            <field name="end_hour" widget="float_time"/>
             <field name="room"/>
             <field name="therapist_id"/>
             <field name="tipe_pembayaran"/>
