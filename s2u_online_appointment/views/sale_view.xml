@@ -1,0 +1,18 @@
+<!-- addons/my_hide_email_button/views/sale_order_hide_send_mail.xml -->
+<odoo>
+  <data>
+
+    <record id="view_order_form_hide_send_mail" model="ir.ui.view">
+      <field name="name">sale.order.form.hide.send.mail</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <!-- priority > 0 agar override setelah bawaan -->
+      <field name="priority" eval="20"/>
+      <field name="arch" type="xml">
+        <!-- Hapus elemen -->
+        <xpath expr="//header//button[@name='action_quotation_send']" position="replace"/>
+      </field>
+    </record>
+
+  </data>
+</odoo>

@@ -1,0 +1,42 @@
+<!-- addons/calendar_sale_bridge/views/calendar_event_view.xml -->
+<odoo>
+  <data>
+
+    <!-- Inherit tampilan Calendar Event -->
+    <record id="view_calendar_event_form_inherit_so" model="ir.ui.view">
+      <field name="name">calendar.event.form.inherit.so</field>
+      <field name="model">calendar.event</field>
+      <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+      <field name="arch" type="xml">
+
+        <!-- HEADER: tambahkan tombol -->
+         <xpath expr="//field[@name='recurrency']" position="after">
+            <field name="sale_order_id" readonly="1"/>
+        </xpath>
+
+        <xpath expr="//sheet" position="before">
+          <!-- Tombol buat SO -->
+          <header>
+          <button
+              name="action_confirm_to_sale_order"
+              type="object"
+              string="Confirm Booking"
+              class="oe_highlight"
+              attrs="{'invisible': [('sale_order_id', '!=', False)]}"
+          />
+          <!-- Tombol buka SO (jika sudah ada) -->
+          <button
+              name="action_confirm_to_sale_order"
+              type="object"
+              string="Open Sales Order"
+              attrs="{'invisible': [('sale_order_id', '=', False)]}"
+          />
+        </header>
+        </xpath>
+        <!-- BODY: tampilkan link SO di tab general -->
+
+      </field>
+    </record>
+
+  </data>
+</odoo>

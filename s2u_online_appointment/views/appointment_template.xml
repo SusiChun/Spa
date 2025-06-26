@@ -172,9 +172,12 @@
                                      <h2>Appointment scheduled!</h2>
                                      <t t-if="appointment">
                                          <p>Your Appointment <b><span t-field="appointment.name"/></b> has been scheduled for <b><span t-field="appointment.start"/></b>.</p>
+                                         <p>Transfer ke rekening berikut BCA 1280329696 a/n Hilda dan simpan bukti transfer!</p>
                                      </t>
                                      <t t-else="">
                                         <p>Your Appointment has been scheduled.</p>
+                                        <p>Transfer ke rekening berikut BCA 1280329696 a/n Hilda dan simpan bukti transfer!</p>
+
                                      </t>
                                      <p>Thank You!</p>
                                 </div>

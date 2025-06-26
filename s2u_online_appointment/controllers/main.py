@@ -170,9 +170,9 @@ class OnlineAppointment(http.Controller):
             if not post.get('email', False):
                 error['email'] = True
                 error_message.append(_('Please enter your email address.'))
-            elif not functions.valid_email(post.get('email', '')):
-                error['email'] = True
-                error_message.append(_('Please enter a valid email address.'))
+            # elif not functions.valid_email(post.get('email', '')):
+            #     error['email'] = True
+            #     error_message.append(_('Please enter a valid email address.'))
             if not post.get('phone', False):
                 error['phone'] = True
                 error_message.append(_('Please enter your phonenumber.'))
@@ -234,7 +234,7 @@ class OnlineAppointment(http.Controller):
 
         # set detaching = True, we do not want to send a mail to the attendees
         appointment = request.env['calendar.event'].sudo().with_context(detaching=True).create({
-            'name': option.name,
+            'name':  f"{option.name}-{post.get('name')}",
             'description': post.get('remarks', ''),
             'start': start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             'stop': (start_datetime + datetime.timedelta(minutes=round(option.duration * 60))).strftime("%Y-%m-%d %H:%M:%S"),

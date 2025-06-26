@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pengeluaran,pengeluaran.pengeluaran,sc_expense.model_pengeluaran_pengeluaran,,1,1,1,1
+access_pengeluaran_line,pengeluaran.line,sc_expense.model_pengeluaran_line,,1,1,1,1
+access_pengeluaran_wizard,pengeluaran.wizard,sc_expense.model_pengeluaran_wizard,,1,1,1,1

@@ -32,7 +32,8 @@
     'depends': [
         'calendar',
         'website',
-        'portal'
+        'portal',
+        'sale'
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -41,6 +42,9 @@
         'views/menus.xml',
         'views/appointment_slot_view.xml',
         'views/appointment_option_view.xml',
+        'views/calendar_view.xml',
+        'views/sale_view.xml',
+
     ],
     'qweb': [
     ],

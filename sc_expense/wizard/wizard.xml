@@ -1,0 +1,29 @@
+<odoo>
+    <data>
+    <record id="view_pengeluaran_wizard_form" model="ir.ui.view">
+        <field name="name">pengeluaran.wizard.form</field>
+        <field name="model">pengeluaran.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Pengeluaran">
+                <group>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+                <footer>
+                    <button string="Export" type="object" name="export_excel" class="btn-primary"/>
+                    <button string="Batal" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+<report
+        id="report_pengeluaran_xlsx"
+        model="pengeluaran.wizard"
+        string="Pengeluaran XLSX"
+        report_type="xlsx"
+        name="sc_expense.report_pengeluaran_xlsx"
+        file="sc_expense.report_pengeluaran_xlsx"
+        print_report_name="'Pengeluaran_Excel'"
+    />
+    </data>
+</odoo>
