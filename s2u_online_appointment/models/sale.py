@@ -26,3 +26,26 @@ class SO(models.Model):
         ('QRIS', 'QRIS'),
 
     ], required=True, string='Tipe Pembayaran', copy=False)
+    total_jam = fields.Float(
+        string='Ttl Jam',
+        compute='_compute_total_jam',  # nama fungsi compute
+        readonly=True  # opsional: supaya user tidak bisa mengubah manual
+    )
+    state = fields.Selection(
+        selection=[
+            ('draft', "Mulai"),
+            ('sent', " "),
+            ('sale', "Selesai"),
+            ('done', "Locked"),
+            ('cancel', "Cancelled"),
+        ],
+        string="Status",
+        readonly=True, copy=False, index=True,
+        tracking=3,
+        default='draft')
+    # ----------  logika perhitungan  ----------
+    @api.depends('start_hour', 'end_hour')
+    def _compute_total_jam(self):
+        for rec in self:
+            # kalau salah satu kosong, jadikan 0.0
+            rec.total_jam = (rec.end_hour or 0.0) - (rec.start_hour or 0.0)

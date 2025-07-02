@@ -1,6 +1,9 @@
 <!-- addons/my_hide_email_button/views/sale_order_hide_send_mail.xml -->
 <odoo>
   <data>
+       <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
+            <field name="context" eval="{}"/>
+       </record>
 <record id="view_order_tree_hide_send_mail" model="ir.ui.view">
       <field name="name">sale.order.tree.hide.send.mail</field>
       <field name="model">sale.order</field>
@@ -9,12 +12,20 @@
       <field name="arch" type="xml">
             <field name="name" position="after">
                 <field name="therapist_id"/>
-                <field name="start_hour"/>
-                <field name="end_hour"/>
-                <field name="room"/>
+                <field name="start_hour" widget="float_time"/>
+                <field name="end_hour" widget="float_time"/>
+                <field name="total_jam"/>
+                 <field name="room"/>
+
+                <field name="komisi"/>
                 <field name="tipe_pembayaran"/>
             </field>
-
+            <field name="activity_ids" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+           <field name="partner_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
       </field>
 </record>
     <record id="view_order_tree_hide_send_mail2" model="ir.ui.view">
@@ -23,14 +34,22 @@
       <field name="inherit_id" ref="sale.view_order_tree"/>
       <field name="priority" eval="20"/>
       <field name="arch" type="xml">
+
             <field name="name" position="after">
                 <field name="therapist_id"/>
-                <field name="start_hour"/>
-                <field name="end_hour"/>
+                <field name="start_hour" widget="float_time"/>
+                <field name="end_hour" widget="float_time"/>
+                <field name="total_jam"/>
                 <field name="room"/>
+                <field name="komisi"/>
                 <field name="tipe_pembayaran"/>
             </field>
-
+            <field name="activity_ids" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+           <field name="partner_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
       </field>
 </record>
     <record id="view_order_form_hide_send_mail" model="ir.ui.view">
@@ -42,13 +61,32 @@
       <field name="arch" type="xml">
         <!-- Hapus elemen -->
         <xpath expr="//header//button[@name='action_quotation_send']" position="replace"/>
-        <field name="date_order" position="after">
+        <field name="partner_id" position="after">
             <field name="start_hour" widget="float_time"/>
             <field name="end_hour" widget="float_time"/>
+             <field name="total_jam"/>
+        </field>
+      <field name="date_order" position="after">
             <field name="room"/>
             <field name="therapist_id"/>
             <field name="tipe_pembayaran"/>
         </field>
+           <field name="payment_term_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+           <xpath expr="//notebook/page[@name='other_information']" position="attributes">
+                <attribute name="invisible">1</attribute>
+           </xpath>
+          <xpath expr="//button[4]" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+           </xpath>
+          <xpath expr="//button[@id='create_invoice_percentage']" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+           </xpath>
+          <xpath expr="//button[@name='action_quotation_send']" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+           </xpath>
+
       </field>
     </record>
 

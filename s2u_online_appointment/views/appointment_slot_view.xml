@@ -6,19 +6,28 @@
             <field name="arch" type="xml">
                 <search>
                     <field name="user_id"/>
+                    <field name="employee_id"/>
                     <field name="day"/>
+                    <field name="date"/>
+                    <group expand="1" string="Group By">
+                        <filter string="Tanggal" name="date" context="{'group_by': 'date'}"/>
+                         <filter string="Therapist" name="employee_id" context="{'group_by': 'date'}"/>
+                    </group>
                 </search>
+
             </field>
         </record>
 
         <record model="ir.ui.view" id="appointment_slot_form_view">
             <field name="model">s2u.appointment.slot</field>
             <field name="arch" type="xml">
-                <form string="Appointment Slot">
+                <form string="Jadwal Therapist">
                     <sheet>
                         <group>
                             <group>
+                                 <field name="date"/>
                                 <field name="user_id"/>
+                                <field name="employee_id"/>
                                 <field name="day"/>
                                 <field name="slot" widget="float_time"/>
                             </group>
@@ -33,8 +42,10 @@
         <record model="ir.ui.view" id="appointment_slot_tree_view">
             <field name="model">s2u.appointment.slot</field>
             <field name="arch" type="xml">
-                <tree string="Slots">
+                <tree string="Slots" editable="bottom">
                     <field name="user_id"/>
+                    <field name="date"/>
+                    <field name="employee_id"/>
                     <field name="day"/>
                     <field name="slot" widget="float_time"/>
                 </tree>
@@ -43,13 +54,13 @@
 
         
         <record model="ir.actions.act_window" id="appointment_slot_action">
-            <field name="name">Appointment Slots</field>
+            <field name="name">Jadwal Therapist</field>
             <field name="res_model">s2u.appointment.slot</field>
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem name="Appointment Slots" id="menu_appointment_slot"
-                  parent="menu_appointment" groups="website.group_website_designer"
+        <menuitem name="Jadwal Therapist" id="menu_appointment_slot"
+                  web_icon="s2u_online_appointment,static/description/icon1.png"
                   action="appointment_slot_action" sequence="10"/>
 
     </data>

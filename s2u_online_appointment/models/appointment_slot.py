@@ -13,18 +13,20 @@ class AppointmentSlot(models.Model):
     @api.model
     def _get_week_days(self):
         return [
-            ('0', _('Monday')),
-            ('1', _('Tuesday')),
-            ('2', _('Wednesday')),
-            ('3', _('Thursday')),
-            ('4', _('Friday')),
-            ('5', _('Saturday')),
-            ('6', _('Sunday'))
+            ('0', _('Senin ')),
+            ('1', _('Selasa')),
+            ('2', _('Rabu')),
+            ('3', _('Kamis')),
+            ('4', _('Jumat')),
+            ('5', _('Sabtu')),
+            ('6', _('Minggu'))
         ]
 
     user_id = fields.Many2one('res.users', string='User', required=True)
-    day = fields.Selection(selection=_get_week_days, default='0', string="Day", required=True)
-    slot = fields.Float('Slot', required=True)
+    employee_id = fields.Many2one('hr.employee', string='Therapist', required=True)
+    date =fields.Date(string='Tanggal')
+    day = fields.Selection(selection=_get_week_days, default='0', string="Hari", required=True)
+    slot = fields.Float('Jam', required=True)
 
     @api.constrains('slot')
     def _slot_validation(self):
