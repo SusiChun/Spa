@@ -50,7 +50,7 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_pengeluaran_root" name="Pengeluaran" sequence="200" web_icon="sc_expense,static/description/icon.svg"/>
+    <menuitem id="menu_pengeluaran_root" name="Pengeluaran" sequence="80" web_icon="sc_expense,static/description/icon.svg"/>
     <menuitem id="menu_pengeluaran_main" name="Daftar Pengeluaran" parent="sc_expense.menu_pengeluaran_root" action="action_pengeluaran"/>
 
 
