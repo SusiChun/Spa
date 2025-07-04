@@ -33,7 +33,8 @@
         'calendar',
         'website',
         'portal',
-        'sale'
+        'sale',
+        'hr'
     ],
     'data': [
         'security/ir.model.access.csv',

@@ -4,23 +4,26 @@
        <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
             <field name="context" eval="{}"/>
        </record>
-<record id="view_order_tree_hide_send_mail" model="ir.ui.view">
+    <record id="view_order_tree_hide_send_mail" model="ir.ui.view">
       <field name="name">sale.order.tree.hide.send.mail</field>
       <field name="model">sale.order</field>
       <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
       <field name="priority" eval="20"/>
       <field name="arch" type="xml">
             <field name="name" position="after">
-                <field name="therapist_id"/>
+                <field name="therapist_id" optional="show" widget="many2one_avatar_user"/>
+                <field name="date_order"/>
                 <field name="start_hour" widget="float_time"/>
                 <field name="end_hour" widget="float_time"/>
                 <field name="total_jam"/>
                  <field name="room"/>
-
                 <field name="komisi"/>
                 <field name="tipe_pembayaran"/>
             </field>
             <field name="activity_ids" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+           <field name="create_date" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
            <field name="partner_id" position="attributes">
@@ -44,6 +47,7 @@
                 <field name="komisi"/>
                 <field name="tipe_pembayaran"/>
             </field>
+
             <field name="activity_ids" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
@@ -65,11 +69,13 @@
             <field name="start_hour" widget="float_time"/>
             <field name="end_hour" widget="float_time"/>
              <field name="total_jam"/>
+            <field name="available_therapist_ids" invisible="1"/>
         </field>
       <field name="date_order" position="after">
             <field name="room"/>
-            <field name="therapist_id"/>
+            <field name="therapist_id" options="{'no_create': True, 'no_open': True,'no_edit': True}"/>
             <field name="tipe_pembayaran"/>
+            <field name="end_datetime"/>
         </field>
            <field name="payment_term_id" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -77,7 +83,7 @@
            <xpath expr="//notebook/page[@name='other_information']" position="attributes">
                 <attribute name="invisible">1</attribute>
            </xpath>
-          <xpath expr="//button[4]" position="attributes">
+          <xpath expr="//button[@id='create_invoice']" position="attributes">
                 <attribute name="groups">base.group_no_one</attribute>
            </xpath>
           <xpath expr="//button[@id='create_invoice_percentage']" position="attributes">

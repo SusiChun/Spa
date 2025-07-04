@@ -5,7 +5,6 @@
             <field name="model">s2u.appointment.slot</field>
             <field name="arch" type="xml">
                 <search>
-                    <field name="user_id"/>
                     <field name="employee_id"/>
                     <field name="day"/>
                     <field name="date"/>
@@ -26,10 +25,14 @@
                         <group>
                             <group>
                                  <field name="date"/>
-                                <field name="user_id"/>
                                 <field name="employee_id"/>
+                                <field name="user_id" invisible="1"/>
                                 <field name="day"/>
+                                <field name="start_hour"  widget="float_time"/>
+                                <field name="end_hour"  widget="float_time"/>
+<!--
                                 <field name="slot" widget="float_time"/>
+-->
                             </group>
                             <group>
                             </group>
@@ -43,20 +46,71 @@
             <field name="model">s2u.appointment.slot</field>
             <field name="arch" type="xml">
                 <tree string="Slots" editable="bottom">
-                    <field name="user_id"/>
                     <field name="date"/>
                     <field name="employee_id"/>
+                    <field name="user_id" invisible="1"/>
                     <field name="day"/>
+<!--
                     <field name="slot" widget="float_time"/>
+-->
+                    <field name="start_hour"  widget="float_time"/>
+                    <field name="end_hour"  widget="float_time"/>
                 </tree>
             </field>
         </record>
 
-        
+        <record id="view_slot_kanban_available" model="ir.ui.view">
+        <field name="name">s2u.appointment.slot.kanban.available</field>
+        <field name="model">s2u.appointment.slot</field>
+        <field name="arch" type="xml">
+          <!-- Group default per tanggal -->
+          <kanban default_group_by="date:day" class="o_kanban_small_column">
+            <field name="date"/>
+            <field name="start_hour"/>
+            <field name="end_hour"/>
+            <field name="employee_id"/>
+            <field name="sale_order_count"/>
+            <field name="is_available"/>
+            <templates>
+              <t t-name="kanban-box">
+                <!-- Set warna kartu: hijau bila kosong -->
+                <div t-attf-class="oe_kanban_card shadow-sm rounded {{ record.is_available.raw_value and 'bg-success-10' or 'bg-danger-10' }}">
+                  <div class="p-2 d-flex">
+                    <!-- Foto Therapist -->
+                    <img t-att-src="kanban_image('hr.employee', 'avatar_128', record.employee_id.raw_value)" t-att-title="record.employee_id.value" t-att-alt="record.employee_id.value" class="o_image_40_cover float-start"/>
+
+
+                    <!-- Detail -->
+                    <div class="flex-grow-1">
+                      <strong><t t-esc="record.employee_id.value"/></strong><br/>
+                     <small>
+                      <t t-esc="record.time_range"/>  <!-- asumsikan field Char sudah Anda buat -->
+                     </small><br/>
+
+                    <t t-if="record.is_available.raw_value">
+                      <span class="badge bg-success mt-1">Available</span>
+                    </t>
+                    <t t-else="">
+                      <span class="badge bg-danger mt-1">Booked</span>
+                    </t>
+
+                    <t t-if="record.sale_order_count.raw_value">
+                      <span class="badge bg-secondary mt-1">
+                        <t t-esc="record.sale_order_count.value"/> Order(s)
+                      </span>
+                    </t>
+                    </div>
+                  </div>
+                </div>
+              </t>
+            </templates>
+          </kanban>
+        </field>
+        </record>
         <record model="ir.actions.act_window" id="appointment_slot_action">
             <field name="name">Jadwal Therapist</field>
             <field name="res_model">s2u.appointment.slot</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">kanban,tree,form</field>
         </record>
 
         <menuitem name="Jadwal Therapist" id="menu_appointment_slot"
