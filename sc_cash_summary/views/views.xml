@@ -1,0 +1,135 @@
+<odoo>
+  <data>
+    <record id="action_sale_order_lines_from_cash_summary"
+      model="ir.actions.act_window">
+        <field name="name">Detail Penjualan</field>
+        <field name="res_model">sale.order.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>  <!-- akan diganti di Python -->
+        <field name="context">{'search_default_group_by_product':1}</field>
+    </record>
+
+  <!-- Pengeluaran -->
+    <record id="action_expense_lines_from_cash_summary"
+              model="ir.actions.act_window">
+        <field name="name">Detail Pengeluaran</field>
+        <field name="res_model">pengeluaran.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+    </record>
+   <record id="view_daily_cash_summary_tree" model="ir.ui.view">
+        <field name="name">cash.summary.tree</field>
+        <field name="model">cash.summary</field>
+        <field name="arch" type="xml">
+            <tree string="Cash Summary" default_order="date desc">
+                <field name="date"/>
+                <field name="komisi" sum="Total Komisi"/>
+                 <field name="amount_paket" sum="Total Paket"/>
+                 <field name="amount_minuman" sum="Total Minuman"/>
+                 <field name="revenue" sum="Total Pendapatan"/>
+                 <field name="expense" sum="Total Pengeluaran"/>
+                <field name="amount_cash" sum="Total Cash"/>
+                <field name="amount_debit_mandiri" sum="Total Mandiri"/>
+                <field name="amount_debit_bca" sum="Total BCA"/>
+                <field name="amount_transfer" sum="Total Transfer"/>
+                <field name="amount_qris" sum="Total QRIS"/>
+                <field name="net" sum="Total Bersih"/>
+            </tree>
+        </field>
+    </record>
+   <record id="view_daily_cash_summary_search" model="ir.ui.view">
+        <field name="name">cash.summary.search</field>
+        <field name="model">cash.summary</field>
+        <field name="arch" type="xml">
+            <search string="Cari Rekap Harian">
+                <field name="date"   filter_domain="[]"/>
+                <group expand="1" string="Group By">
+                    <!-- klik manual -->
+                    <filter name="grp_date" string="Tanggal"
+                            context="{'group_by':'date'}"/>
+
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_cash_summary_form" model="ir.ui.view">
+    <field name="name">cash.summary.form</field>
+    <field name="model">cash.summary</field>
+    <field name="arch" type="xml">
+      <form string="Cash Summary">
+        <header>
+        </header>
+        <sheet>
+          <group>
+               <group>
+                    <field name="date"/>
+                    <field name="komisi" />
+                     <field name="amount_paket" />
+                     <field name="amount_minuman"/>
+                     <field name="revenue"/>
+                     <field name="expense"/>
+                     <field name="net"/>
+               </group>
+               <group>
+                    <field name="amount_cash"/>
+                    <field name="amount_debit_mandiri"/>
+                    <field name="amount_debit_bca"/>
+                    <field name="amount_transfer"/>
+                    <field name="amount_qris"/>
+               </group>
+          </group>
+
+          <!-- Jika ingin embed langsung -->
+          <notebook>
+            <page string="Detail Penjualan">
+              <field name="sale_line_ids" mode="tree"
+                     context="{'create': False}" nolabel="1">
+                <tree>
+                  <field name="product_id"/>
+                  <field name="product_uom_qty"/>
+                  <field name="price_unit"/>
+                  <field name="price_subtotal"/>
+                </tree>
+              </field>
+            </page>
+
+            <page string="Detail Pengeluaran">
+              <field name="expense_line_ids" mode="tree"
+                     context="{'create': False}" nolabel="1">
+                <tree>
+                  <field name="keterangan"/>
+                  <field name="subtotal"/>
+                </tree>
+              </field>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+    </record>
+    <!-- Action -->
+    <record id="action_daily_cash_summary" model="ir.actions.act_window">
+        <field name="name">Laporan Harian</field>
+        <field name="res_model">cash.summary</field>
+        <field name="view_mode">tree,form</field>
+        <!-- Bebas atur domain; contoh default hari ini -->
+        <!-- <field name="domain">[('date', '=', context_today())]</field> -->
+        <field name="context">{'group_by':'date'}</field>   <!-- ⬅ default grouping -->
+        <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                  Tidak ada data.
+              </p>
+              <p>Ringkasan harian pendapatan &amp; pengeluaran muncul di sini begitu ada transaksi.</p>
+          </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_finance_root" name="Laporan" sequence="90"/>
+    <menuitem id="menu_daily_cash_summary"
+              name="Rekap Harian"
+              parent="menu_finance_root"
+              action="action_daily_cash_summary"
+              sequence="1"/>
+  </data>
+</odoo>
