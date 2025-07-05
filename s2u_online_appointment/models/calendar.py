@@ -29,11 +29,16 @@ class CalendarEvent(models.Model):
                 _("Setidaknya satu attendee/customer wajib diisi sebelum membuat Sales Order.")
             )
         internal_user = (internal_partner_ids.mapped('user_ids'))[:1] or self.user_id
+        therapist = self.env['hr.employee'].search(
+            [('user_id', '=', self.env.uid)],
+            limit=1
+        )
+
         # Siapkan baris produk (ganti ID produk sesuai modul Anda)
         #product_meeting = self.env.ref('product.product_product_4')   # “Consulting Service” contoh
         so_vals = {
             'partner_id': partner_customer.id,      # customer
-            'therapist_id': internal_user.id,
+            'therapist_id': therapist.id or False,
             'origin': f"Event: {self.name}",
             'note': f"{self.name}-{self.description}",
             'date_order': self.start or fields.Datetime.now(),
