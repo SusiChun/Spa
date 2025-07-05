@@ -11,30 +11,25 @@ class HrEmployee(models.Model):
         store=False)
 
     def _compute_available_now(self):
-        SaleOrder = self.env['sale.order'].sudo()
         now_local = datetime.now(COMPANY_TZ)
         today = now_local.date()
+
         now_hour = now_local.hour + now_local.minute / 60.0
+        now_utc = datetime.now(tz=COMPANY_TZ).astimezone(pytz.utc)
+        SaleOrder = self.env['sale.order'].sudo()
+
+        # ‑‑‑ Waktu “sekarang” dalam UTC (karena database Odoo disimpan UTC)
+        now_utc = datetime.now(tz=COMPANY_TZ).astimezone(pytz.utc)
 
         for emp in self:
-            # Ambil semua order hari ini milik therapist
-            orders = SaleOrder.search([
+            # Order yang *overlap* dgn now:
+            #   start ≤ now < end
+            overlap_domain = [
                 ('therapist_id', '=', emp.id),
-                ('date_order', '>=',
-                 COMPANY_TZ.localize(datetime.combine(today, datetime.min.time()))
-                 .astimezone(pytz.utc)),  # awal hari UTC
-                ('date_order', '<',
-                 COMPANY_TZ.localize(datetime.combine(today, datetime.max.time()))
-                 .astimezone(pytz.utc)),  # akhir hari UTC
-                ('state', 'in', ('draft', 'sale', 'done')),
-            ])
-
-            busy = False
-            for o in orders:
-                # jam mulai & selesai menurut lokal
-                o_start_local = fields.Datetime.context_timestamp(o, o.date_order)
-                o_hour = o_start_local.hour + o_start_local.minute / 60.0
-                if o_hour >= (o.start_hour or 0) and o_hour < (o.end_hour or 0):
-                    busy = True
-                    break
+                ('state', 'in', ('draft', 'sale', 'done')),  # sesuaikan status aktif
+                ('date_order', '<=', now_utc),
+                ('end_datetime', '>', now_utc),
+            ]
+            # search_count ⇒ lebih hemat daripada search lalu len()
+            busy = bool(SaleOrder.search_count(overlap_domain))
             emp.available_now = not busy

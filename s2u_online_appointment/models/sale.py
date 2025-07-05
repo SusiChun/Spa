@@ -1,6 +1,8 @@
 from odoo import api, fields, models,_
 from odoo.exceptions import UserError
 from dateutil.relativedelta import relativedelta
+from datetime import datetime, date, time
+import pytz
 class SO(models.Model):
     _inherit = 'sale.order'
 
@@ -56,8 +58,36 @@ class SO(models.Model):
         string='Selesai',
         compute='_compute_end_datetime',
         store=True)
-
+    date_order = fields.Datetime(
+        string="Order Date",
+        required=True, readonly=False, copy=False,
+        help="Creation date of draft/sent orders,\nConfirmation date of confirmed orders.",
+        default=fields.Datetime.now)
     # ------------------------------------------------
+    @api.onchange('start_hour')
+    def _onchange_start_hour_set_date_order(self):
+        if self.start_hour is False:
+            return
+
+        tz_name = self.env.user.tz or self.env.company.tz or 'UTC'
+        tz = pytz.timezone(tz_name)
+
+        today_local = date.today()
+
+        hour_int = int(self.start_hour)
+        minute_int = int(round((self.start_hour - hour_int) * 60.0))
+
+        # Localized datetime
+        local_dt = tz.localize(datetime.combine(
+            today_local, time(hour_int, minute_int)
+        ))
+
+        # Convert to UTC
+        utc_dt = local_dt.astimezone(pytz.utc)
+
+        # Remove tzinfo before assigning
+        self.date_order = utc_dt.replace(tzinfo=None)
+
     @api.depends('date_order', 'start_hour', 'end_hour')
     def _compute_end_datetime(self):
         for so in self:

@@ -9,7 +9,7 @@ import pytz
 COMPANY_TZ = pytz.timezone('Asia/Jakarta')
 class AppointmentSlot(models.Model):
     _name = 's2u.appointment.slot'
-    _order = 'user_id, day, slot'
+    _order = 'date desc'
     _description = "Appointment Slot"
     
     @api.model
@@ -78,7 +78,7 @@ class AppointmentSlot(models.Model):
     @api.depends('date', 'start_hour', 'end_hour', 'employee_id')
     def _compute_orders(self):
         SaleOrder = self.env['sale.order'].sudo()
-
+        today=fields.Date.today()
         for slot in self:
             slot.sale_order_ids = False
             slot.sale_order_count = 0
@@ -120,4 +120,7 @@ class AppointmentSlot(models.Model):
 
             slot.sale_order_ids = orders
             slot.sale_order_count = len(orders)
-            slot.is_available = len(orders) == 0
+            if slot.date == today:
+                slot.is_available = slot.employee_id.available_now
+            else:
+                slot.is_available = True
