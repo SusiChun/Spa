@@ -101,7 +101,7 @@ class sc_cash_summary(models.Model):
                     SUM(CASE WHEN tag_minuman.id  IS NOT NULL          THEN sol.price_subtotal ELSE 0 END) AS amount_minuman,
 
                     /* ------ Total pendapatan hari tsb (semua produk & channel) ------ */
-                    SUM(sol.price_subtotal)             AS revenue
+                    SUM(sol.price_subtotal + COALESCE(so.komisi,0))        AS revenue
                     FROM  sale_order_line                 sol
                     JOIN  sale_order                      so   ON so.id = sol.order_id
                     /* --- ke product & tag --- */
