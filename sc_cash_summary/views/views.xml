@@ -21,7 +21,7 @@
         <field name="name">cash.summary.tree</field>
         <field name="model">cash.summary</field>
         <field name="arch" type="xml">
-            <tree string="Cash Summary" default_order="date desc">
+            <tree string="Cash Summary" default_order="date desc" create="0" delete="0">
                 <field name="date"/>
                 <field name="komisi" sum="Total Komisi"/>
                  <field name="amount_paket" sum="Total Paket"/>
@@ -57,7 +57,7 @@
     <field name="name">cash.summary.form</field>
     <field name="model">cash.summary</field>
     <field name="arch" type="xml">
-      <form string="Cash Summary">
+      <form string="Cash Summary" create="0" delete="0">
         <header>
         </header>
         <sheet>
