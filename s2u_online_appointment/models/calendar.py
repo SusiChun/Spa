@@ -30,7 +30,7 @@ class CalendarEvent(models.Model):
             )
         internal_user = (internal_partner_ids.mapped('user_ids'))[:1] or self.user_id
         therapist = self.env['hr.employee'].search(
-            [('user_id', '=', self.env.uid)],
+            [('user_id', '=', internal_user.id)],
             limit=1
         )
 
