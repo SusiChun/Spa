@@ -33,7 +33,7 @@ class CalendarEvent(models.Model):
         #product_meeting = self.env.ref('product.product_product_4')   # “Consulting Service” contoh
         so_vals = {
             'partner_id': partner_customer.id,      # customer
-            'user_id': internal_user.id,
+            'therapist_id': internal_user.id,
             'origin': f"Event: {self.name}",
             'note': f"{self.name}-{self.description}",
             'date_order': self.start or fields.Datetime.now(),
