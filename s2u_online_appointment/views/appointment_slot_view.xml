@@ -64,7 +64,7 @@
         <field name="model">s2u.appointment.slot</field>
         <field name="arch" type="xml">
           <!-- Group default per tanggal -->
-          <kanban default_group_by="date:day" class="o_kanban_small_column">
+          <kanban default_group_by="date:day" default_order="date desc" class="o_kanban_small_column">
             <field name="date"/>
             <field name="start_hour"/>
             <field name="end_hour"/>

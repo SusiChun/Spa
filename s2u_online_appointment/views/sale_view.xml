@@ -96,6 +96,35 @@
 
       </field>
     </record>
+<record id="sale_order_search_filter_today" model="ir.ui.view">
+    <field name="name">sale.order.search.today</field>
+    <field name="model">sale.order</field>
+    <!-- ganti ref ini dengan ID search‑view asli yang ingin di‑inherit -->
+    <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+    <field name="arch" type="xml">
+      <!-- Sisipkan setelah filter terakhir -->
+      <xpath expr="//filter[last()]" position="after">
+        <!-- Untuk field tipe Date (tanpa jam) -->
+        <filter string="Hari Ini"
+                name="filter_today"
+               domain="
+          [
+            ('date_order', '&gt;=',
+             (context_today() + relativedelta(hours=-7)).strftime('%%Y-%%m-%%d %%H:%%M:%%S')),
+            ('date_order', '&lt;',
+             (context_today() + relativedelta(days=1, hours=-7)).strftime('%%Y-%%m-%%d %%H:%%M:%%S'))
+          ]"/>
 
+      </xpath>
+    </field>
+  </record>
+
+  <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
+    <!-- id di atas menyesuaikan versi/edisi; cek XML aslinya -->
+    <field name="context" eval="{
+        'search_default_filter_today': 1,
+        'default_state': 'draft'
+    }"/>
+  </record>
   </data>
 </odoo>

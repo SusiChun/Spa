@@ -9,7 +9,7 @@ import pytz
 COMPANY_TZ = pytz.timezone('Asia/Jakarta')
 class AppointmentSlot(models.Model):
     _name = 's2u.appointment.slot'
-    _order = 'date desc'
+    _order = 'date asc'
     _description = "Appointment Slot"
     
     @api.model
