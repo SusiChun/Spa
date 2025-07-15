@@ -77,89 +77,97 @@ class sc_cash_summary(models.Model):
             /* ==========================================================
                1. AGREGASI PENJUALAN PER CHANNEL PEMBAYARAN
                ========================================================== */
-            WITH so_agg AS (
-                SELECT
-                    so.date_order::date AS date,
-                    SUM(so.komisi)          AS komisi,
-                    SUM(CASE WHEN so.tipe_pembayaran = 'Cash'
-                             THEN sol.price_subtotal ELSE 0 END)          AS amount_cash,
+WITH order_totals AS (
+    SELECT
+        s.id,  -- kunci unik SO
+        DATE(s.date_order AT TIME ZONE 'Asia/Jakarta')  AS order_date,
+        s.komisi                                       AS commission,     -- 1× per SO
+        SUM(l.price_subtotal)                          AS subtotal_order  -- total baris per SO
+    FROM sale_order s
+    JOIN sale_order_line l   ON l.order_id = s.id
+ 
+    GROUP BY s.id, order_date, s.komisi
+),
 
-                    SUM(CASE WHEN so.tipe_pembayaran = 'Debit Mandiri'
-                             THEN sol.price_subtotal ELSE 0 END)          AS amount_debit_mandiri,
+/* 2️⃣  Agregasi komisi per‑tanggal --------------------------------------- */
+commission_agg AS (
+    SELECT
+        order_date AS date,
+        SUM(commission) AS komisi              -- sudah terjamin 1× per SO
+    FROM order_totals
+    GROUP BY order_date
+),
 
-                    SUM(CASE WHEN so.tipe_pembayaran = 'Debit BCA'
-                             THEN sol.price_subtotal ELSE 0 END)          AS amount_debit_bca,
+/* 3️⃣  Agregasi penjualan per‑tanggal (tanpa komisi) --------------------- */
+sales_line_agg AS (
+    SELECT
+        DATE(so.date_order AT TIME ZONE 'Asia/Jakarta') AS date,
 
-                    SUM(CASE WHEN so.tipe_pembayaran = 'Transfer'
-                             THEN sol.price_subtotal ELSE 0 END)          AS amount_transfer,
+        SUM(CASE WHEN so.tipe_pembayaran = 'Cash'          THEN sol.price_subtotal ELSE 0 END) AS amount_cash,
+        SUM(CASE WHEN so.tipe_pembayaran = 'Debit Mandiri' THEN sol.price_subtotal ELSE 0 END) AS amount_debit_mandiri,
+        SUM(CASE WHEN so.tipe_pembayaran = 'Debit BCA'     THEN sol.price_subtotal ELSE 0 END) AS amount_debit_bca,
+        SUM(CASE WHEN so.tipe_pembayaran = 'Transfer'      THEN sol.price_subtotal ELSE 0 END) AS amount_transfer,
+        SUM(CASE WHEN so.tipe_pembayaran = 'QRIS'          THEN sol.price_subtotal ELSE 0 END) AS amount_qris,
 
-                    SUM(CASE WHEN so.tipe_pembayaran = 'QRIS'
-                             THEN sol.price_subtotal ELSE 0 END)          AS amount_qris,
+        SUM(CASE WHEN tag_paket.id    IS NOT NULL THEN sol.price_subtotal ELSE 0 END) AS amount_paket,
+        SUM(CASE WHEN tag_minuman.id  IS NOT NULL THEN sol.price_subtotal ELSE 0 END) AS amount_minuman,
 
-                    /* ------ Pendapatan per TAG produk ------ */
-                    SUM(CASE WHEN tag_paket.id    IS NOT NULL          THEN sol.price_subtotal ELSE 0 END) AS amount_paket,
-                    SUM(CASE WHEN tag_minuman.id  IS NOT NULL          THEN sol.price_subtotal ELSE 0 END) AS amount_minuman,
+        SUM(sol.price_subtotal) AS subtotal_lines
+    FROM sale_order so
+    JOIN sale_order_line sol      ON sol.order_id = so.id
+    JOIN product_product  pp      ON pp.id = sol.product_id
+    JOIN product_template pt      ON pt.id = pp.product_tmpl_id
+    LEFT JOIN product_tag_product_template_rel rel_paket
+           ON rel_paket.product_template_id = pt.id
+    LEFT JOIN product_tag tag_paket
+           ON tag_paket.id = rel_paket.product_tag_id
+          AND (tag_paket.name ->> 'en_US') ILIKE '%paket%'
 
-                    /* ------ Total pendapatan hari tsb (semua produk & channel) ------ */
-                    SUM(sol.price_subtotal + COALESCE(so.komisi,0))        AS revenue
-                    FROM  sale_order_line                 sol
-                    JOIN  sale_order                      so   ON so.id = sol.order_id
-                    /* --- ke product & tag --- */
-                    JOIN  product_product                 pp   ON pp.id = sol.product_id
-                    JOIN  product_template                pt   ON pt.id = pp.product_tmpl_id
+    LEFT JOIN product_tag_product_template_rel rel_min
+           ON rel_min.product_template_id = pt.id
+    LEFT JOIN product_tag tag_minuman
+           ON tag_minuman.id = rel_min.product_tag_id
+          AND (tag_minuman.name ->> 'en_US') ILIKE '%minuman%'
 
-                /* Tag “Paket”  */
-                LEFT  JOIN product_tag_product_template_rel rel_paket
-                       ON rel_paket.product_template_id = pt.id
-                LEFT  JOIN product_tag                 tag_paket
-                       ON tag_paket.id = rel_paket.product_tag_id
-                      AND tag_paket.name->>'en_US' ILIKE '%paket%'
+    WHERE so.state IN ('draft','sale','done')
+    GROUP BY date
+),
 
-                /* Tag “Minuman” */
-                LEFT  JOIN product_tag_product_template_rel rel_min
-                       ON rel_min.product_template_id = pt.id
-                LEFT  JOIN product_tag                 tag_minuman
-                       ON tag_minuman.id = rel_min.product_tag_id
-                      AND tag_minuman.name->>'en_US' ILIKE '%minuman%'
+/* 4️⃣  Agregasi pengeluaran per‑tanggal ---------------------------------- */
+expense_agg AS (
+    SELECT
+        peng.tanggal AS date,
+        SUM(exp_line.subtotal) AS expense
+    FROM pengeluaran_pengeluaran peng
+    JOIN pengeluaran_line exp_line ON exp_line.pengeluaran_id = peng.id
+    GROUP BY peng.tanggal
+)
 
-                WHERE so.state IN ('draft', 'sale', 'done')
-                GROUP BY so.date_order::date
-            ),
+/* 5️⃣  Rekap gabungan ----------------------------------------------------- */
+SELECT
+    row_number() OVER ()                            AS id,
+    COALESCE(sla.date, ca.date, ea.date)            AS date,
+    COALESCE(ca.komisi,          0)                 AS komisi,
 
-            /* ==========================================================
-               2. AGREGASI PENGELUARAN
-               ========================================================== */
-            exp_agg AS (
-                SELECT
-                    peng.tanggal::date AS date,
-                    SUM(exp_line.subtotal) AS expense
-                FROM pengeluaran_line exp_line
-                JOIN pengeluaran_pengeluaran peng
-                  ON peng.id = exp_line.pengeluaran_id
-                GROUP BY peng.tanggal::date
-            )
+    COALESCE(sla.amount_paket,      0)              AS amount_paket,
+    COALESCE(sla.amount_minuman,    0)              AS amount_minuman,
+    COALESCE(sla.amount_cash,       0)              AS amount_cash,
+    COALESCE(sla.amount_debit_mandiri, 0)           AS amount_debit_mandiri,
+    COALESCE(sla.amount_debit_bca,  0)              AS amount_debit_bca,
+    COALESCE(sla.amount_transfer,   0)              AS amount_transfer,
+    COALESCE(sla.amount_qris,       0)              AS amount_qris,
 
-            /* ==========================================================
-               3. GABUNGKAN KEDUANYA  (FULL OUTER JOIN → semua tanggal muncul)
-               ========================================================== */
-            SELECT
-                row_number() OVER ()                      AS id,
-                COALESCE(sa.date, ea.date)                AS date,
-                COALESCE(sa.komisi,          0)          AS komisi,
-                 COALESCE(sa.amount_paket,         0)                             AS amount_paket,
-                COALESCE(sa.amount_minuman,       0)                             AS amount_minuman,
-                COALESCE(sa.amount_cash,          0)      AS amount_cash,
-                COALESCE(sa.amount_debit_mandiri, 0)      AS amount_debit_mandiri,
-                COALESCE(sa.amount_debit_bca,     0)      AS amount_debit_bca,
-                COALESCE(sa.amount_transfer,      0)      AS amount_transfer,
-                COALESCE(sa.amount_qris,          0)      AS amount_qris,
+    /* revenue = subtotal baris + komisi */
+    COALESCE(sla.subtotal_lines, 0) + COALESCE(ca.komisi, 0) AS revenue,
+    COALESCE(ea.expense,        0)                          AS expense,
 
-                COALESCE(sa.revenue, 0)                   AS revenue,
-                COALESCE(ea.expense, 0)                   AS expense,
-                COALESCE(sa.revenue, 0) - COALESCE(ea.expense, 0) AS net
-            FROM so_agg sa
-            FULL OUTER JOIN exp_agg ea
-              ON sa.date = ea.date
-              order by sa.date desc
+    /* laba bersih */
+    COALESCE(sla.subtotal_lines, 0) + COALESCE(ca.komisi, 0)
+      - COALESCE(ea.expense, 0)                             AS net
+
+FROM sales_line_agg sla
+FULL JOIN commission_agg ca  ON ca.date = sla.date
+FULL JOIN expense_agg    ea  ON ea.date = COALESCE(sla.date, ca.date)
+ORDER BY date DESC
         );
     """)
