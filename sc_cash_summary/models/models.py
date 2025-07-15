@@ -157,7 +157,7 @@ SELECT
     COALESCE(sla.amount_transfer,   0)              AS amount_transfer,
     COALESCE(sla.amount_qris,       0)              AS amount_qris,
 
-    /* revenue = subtotal baris + komisi */
+    /* revenue = subtotal baris  */
     COALESCE(sla.subtotal_lines, 0) + COALESCE(ca.komisi, 0) AS revenue,
     COALESCE(ea.expense,        0)                          AS expense,
 
