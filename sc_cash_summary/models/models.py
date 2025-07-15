@@ -77,17 +77,17 @@ class sc_cash_summary(models.Model):
             /* ==========================================================
                1. AGREGASI PENJUALAN PER CHANNEL PEMBAYARAN
                ========================================================== */
-WITH order_totals AS (
-    SELECT
-        s.id,  -- kunci unik SO
-        DATE(s.date_order AT TIME ZONE 'Asia/Jakarta')  AS order_date,
-        s.komisi                                       AS commission,     -- 1× per SO
-        SUM(l.price_subtotal)                          AS subtotal_order  -- total baris per SO
-    FROM sale_order s
-    JOIN sale_order_line l   ON l.order_id = s.id
- 
-    GROUP BY s.id, order_date, s.komisi
-),
+        WITH order_totals AS (
+            SELECT
+                s.id,  -- kunci unik SO
+                s.date_order::date  AS order_date,
+                s.komisi                                       AS commission,     -- 1× per SO
+                SUM(l.price_subtotal)                          AS subtotal_order  -- total baris per SO
+            FROM sale_order s
+            JOIN sale_order_line l   ON l.order_id = s.id
+         
+            GROUP BY s.id, order_date, s.komisi
+        ),
 
 /* 2️⃣  Agregasi komisi per‑tanggal --------------------------------------- */
 commission_agg AS (
