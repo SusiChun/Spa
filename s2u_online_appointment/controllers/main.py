@@ -362,67 +362,6 @@ class OnlineAppointment(http.Controller):
         # override this method when slots needs to be filtered
         return slots
 
-    # def get_free_appointment_slots_for_day(self, option_id, appointment_date, appointee_id, criteria):
-    #
-    #     def slot_present(slots, slot):
-    #
-    #         for s in slots:
-    #             if s['timeslot'] == functions.float_to_time(slot):
-    #                 return True
-    #         return False
-    #
-    #     if not appointment_date:
-    #         return []
-    #
-    #     if not appointee_id:
-    #         return []
-    #
-    #     option = request.env['s2u.appointment.option'].sudo().search([('id', '=', option_id)])
-    #     if not option:
-    #         return []
-    #
-    #     week_day = datetime.datetime.strptime(appointment_date, '%d/%m/%Y').weekday()
-    #     slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', '=', appointee_id),
-    #                                                                ('day', '=', str(week_day))])
-    #     slots = self.filter_slots(slots, criteria)
-    #
-    #     date_start = datetime.datetime.strptime(appointment_date, '%d/%m/%Y').strftime('%Y-%m-%d')
-    #     free_slots = []
-    #     for slot in slots:
-    #         # skip double slots
-    #         if slot_present(free_slots, slot.slot):
-    #             continue
-    #
-    #         # if today, then skip slots in te past (< current time)
-    #         if date_start == datetime.datetime.now().strftime('%Y-%m-%d') and self.ld_to_utc(date_start + ' ' + functions.float_to_time(slot.slot), appointee_id) < datetime.datetime.now(pytz.utc):
-    #             continue
-    #
-    #         event_start = self.ld_to_utc(date_start + ' ' + functions.float_to_time(slot.slot), appointee_id).strftime("%Y-%m-%d %H:%M:%S")
-    #         event_stop = self.ld_to_utc(date_start + ' ' + functions.float_to_time(slot.slot), appointee_id,
-    #                                     duration=option.duration).strftime("%Y-%m-%d %H:%M:%S")
-    #
-    #         # check normal calendar events
-    #         query = """
-    #                 SELECT e.id FROM calendar_event e, calendar_event_res_partner_rel ep
-    #                     WHERE ep.res_partner_id = %s AND
-    #                           e.active = true AND
-    #                           e.id = ep.calendar_event_id AND
-    #                         ((e.start >= %s AND e.start <= %s) OR
-    #                          (e.start <= %s AND e.stop >= %s) OR
-    #                          (e.stop >= %s) AND e.stop <= %s)
-    #         """
-    #         request.env.cr.execute(query, (self.appointee_id_to_partner_id(appointee_id),
-    #                                        event_start, event_stop,
-    #                                        event_start, event_stop,
-    #                                        event_start, event_stop))
-    #         res = request.env.cr.fetchall()
-    #         if not res:
-    #             free_slots.append({
-    #                 'id': slot.id,
-    #                 'timeslot': functions.float_to_time(slot.slot)
-    #             })
-    #
-    #     return free_slots
     def get_free_appointment_slots_for_day(self, option_id, appointment_date, appointee_id, criteria):
         if not appointment_date or not appointee_id:
             return []
@@ -463,7 +402,7 @@ class OnlineAppointment(http.Controller):
                     start = round(start + interval, 2)
                     continue
 
-                # PERBAIKI QUERY TABRAKAN
+                # CEK TUMPUKAN DENGAN calendar_event
                 query = """
                     SELECT 1 FROM calendar_event e
                     JOIN calendar_attendee a ON e.id = a.event_id
@@ -475,7 +414,23 @@ class OnlineAppointment(http.Controller):
                     end_utc.strftime("%Y-%m-%d %H:%M:%S"),
                     start_utc.strftime("%Y-%m-%d %H:%M:%S"),
                 ))
-                if not request.env.cr.fetchone():
+                calendar_conflict = request.env.cr.fetchone()
+
+                # CEK TUMPUKAN DENGAN sale_order
+                therapist = request.env['hr.employee'].sudo().search([
+                    ('user_id', '=', appointee_id)
+                ], limit=1)
+
+                sale_order_conflict = False
+                if therapist:
+                    sale_order_conflict = request.env['sale.order'].sudo().search_count([
+                        ('therapist_id', '=', therapist.id),
+                        ('date_order', '<', end_utc),
+                        ('end_datetime', '>', start_utc),
+                    ]) > 0
+
+                # HANYA MASUKKAN SLOT YANG BEBAS DARI KEDUA KONFLIK
+                if not calendar_conflict and not sale_order_conflict:
                     free_slots.append({
                         'id': f"{slot.id}_{start}",
                         'timeslot': time_str
@@ -485,76 +440,6 @@ class OnlineAppointment(http.Controller):
 
         return free_slots
 
-    # def get_days_with_free_slots(self, option_id, appointee_id, year, month, criteria):
-    #
-    #     if not option_id:
-    #         return {}
-    #
-    #     if not appointee_id:
-    #         return {}
-    #
-    #     start_datetimes = {}
-    #     start_date = datetime.date(year, month, 1)
-    #     for i in range(31):
-    #         if start_date < datetime.date.today():
-    #             start_date += datetime.timedelta(days=1)
-    #             continue
-    #         if start_date.weekday() not in start_datetimes:
-    #             start_datetimes[start_date.weekday()] = []
-    #         start_datetimes[start_date.weekday()].append(start_date.strftime('%Y-%m-%d'))
-    #         start_date += datetime.timedelta(days=1)
-    #         if start_date.month != month:
-    #             break
-    #
-    #     day_slots = []
-    #
-    #     option = request.env['s2u.appointment.option'].sudo().search([('id', '=', option_id)])
-    #     if not option:
-    #         return {}
-    #
-    #     for weekday, dates in start_datetimes.items():
-    #         slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', '=', appointee_id),
-    #                                                                    ('day', '=', str(weekday))])
-    #         slots = self.filter_slots(slots, criteria)
-    #
-    #         for slot in slots:
-    #             for d in dates:
-    #                 # if d == today, then skip slots in te past (< current time)
-    #                 if d == datetime.datetime.now().strftime('%Y-%m-%d') and self.ld_to_utc(d + ' ' + functions.float_to_time(slot.slot), appointee_id) < datetime.datetime.now(pytz.utc):
-    #                     continue
-    #
-    #                 day_slots.append({
-    #                     'timeslot': functions.float_to_time(slot.slot),
-    #                     'date': d,
-    #                     'start': self.ld_to_utc(d + ' ' + functions.float_to_time(slot.slot), appointee_id).strftime("%Y-%m-%d %H:%M:%S"),
-    #                     'stop': self.ld_to_utc(d + ' ' + functions.float_to_time(slot.slot), appointee_id, duration=option.duration).strftime("%Y-%m-%d %H:%M:%S")
-    #                 })
-    #     days_with_free_slots = {}
-    #     for d in day_slots:
-    #         if d['date'] in days_with_free_slots:
-    #             # this day is possible, there was a slot possible so skip other slot calculations for this day
-    #             # We only need to inform the visitor he can click on this day (green), after that he needs to
-    #             # select a valid slot.
-    #             continue
-    #
-    #         query = """
-    #                 SELECT e.id FROM calendar_event e, calendar_event_res_partner_rel ep
-    #                     WHERE ep.res_partner_id = %s AND
-    #                           e.active = true AND
-    #                           e.id = ep.calendar_event_id AND
-    #                         ((e.start >= %s AND e.start <= %s) OR
-    #                          (e.start <= %s AND e.stop >= %s) OR
-    #                          (e.stop >= %s) AND e.stop <= %s)
-    #         """
-    #         request.env.cr.execute(query, (self.appointee_id_to_partner_id(appointee_id),
-    #                                        d['start'], d['stop'],
-    #                                        d['start'], d['stop'],
-    #                                        d['start'], d['stop']))
-    #         res = request.env.cr.fetchall()
-    #         if not res:
-    #             days_with_free_slots[d['date']] = True
-    #     return days_with_free_slots
-    #
     def get_days_with_free_slots(self, option_id, appointee_id, year, month, criteria):
         if not option_id or not appointee_id:
             return {}
@@ -591,10 +476,6 @@ class OnlineAppointment(http.Controller):
                 if slot.date == today and start_utc < datetime.datetime.now(pytz.utc):
                     start = round(start + interval, 2)
                     continue
-                print ( self.appointee_id_to_partner_id(appointee_id))
-                print (end_utc)
-                print (start_utc)
-                # PERBAIKI QUERY OVERLAPNYA
                 query = """
                     SELECT 1 FROM calendar_event e
                     JOIN calendar_attendee a ON e.id = a.event_id
@@ -606,12 +487,28 @@ class OnlineAppointment(http.Controller):
                     end_utc.strftime("%Y-%m-%d %H:%M:%S"),
                     start_utc.strftime("%Y-%m-%d %H:%M:%S"),
                 ))
+                calendar_conflict = request.env.cr.fetchone()
 
-                if not request.env.cr.fetchone():
+                # Cari therapist dari appointee
+                therapist = request.env['hr.employee'].sudo().search([
+                    ('user_id', '=', appointee_id)
+                ], limit=1)
+
+                sale_order_conflict = False
+                if therapist:
+                    sale_order_conflict = request.env['sale.order'].sudo().search_count([
+                        ('therapist_id', '=', therapist.id),
+                        ('date_order', '<', end_utc),
+                        ('end_datetime', '>', start_utc),
+                    ]) > 0
+
+                # Masukkan tanggal hanya jika tidak ada konflik
+                if not calendar_conflict and not sale_order_conflict:
                     days_with_free_slots[slot.date.strftime('%Y-%m-%d')] = True
-                    break  # cukup satu slot valid
+                    break  # cukup satu jam di tanggal ini
 
                 start = round(start + interval, 2)
+
 
         return days_with_free_slots
 
