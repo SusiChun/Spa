@@ -24,10 +24,13 @@ class CalendarEvent(models.Model):
 
         # customer candidates = attendee yg bukan internal
         partner_customer = (self.partner_ids - internal_partner_ids)[:1]
+
+        # Fallback: jika tetap kosong, ambil satu dari partner_ids (daripada error)
         if not partner_customer:
-            raise UserError(
-                _("Setidaknya satu attendee/customer wajib diisi sebelum membuat Sales Order.")
-            )
+            partner_customer = self.partner_ids[:1]
+
+        if not partner_customer:
+            raise UserError(_("Setidaknya satu customer wajib diisi sebelum membuat Sales Order."))
         internal_user = (internal_partner_ids.mapped('user_ids'))[:1] or self.user_id
         therapist = self.env['hr.employee'].search(
             [('user_id', '=', internal_user.id)],
@@ -41,13 +44,12 @@ class CalendarEvent(models.Model):
             'therapist_id': therapist.id or False,
             'origin': f"Event: {self.name}",
             'note': f"{self.name}-{self.description}",
-            'date_order': self.start or fields.Datetime.now(),
+            'date_order': self.start,
             'order_line': [(0, 0, {
                 'name': f"{self.name}",
                 'display_type':'line_section'
             })],
         }
-        print (so_vals)
         # Buat SO (sudo agar siapa pun user kalender bisa)
         sale_order = (
             self.env['sale.order']
