@@ -1,5 +1,5 @@
 
-from odoo import models, fields, tools
+from odoo import models, fields, tools,api
 from datetime import datetime, time, timedelta
 from dateutil.relativedelta import relativedelta
 
@@ -21,7 +21,8 @@ class sc_cash_summary(models.Model):
     amount_transfer = fields.Float(string="Transfer", readonly=True)
     amount_qris = fields.Float(string="QRIS", readonly=True)
     net = fields.Float(string="Saldo Akhir", readonly=True)
-
+    amount_tips=fields.Float(string="Tips", readonly=True)
+    jumlah_tamu=fields.Float(string="Tamu", readonly=True)
 
     sale_line_ids = fields.Many2many(
         'sale.order.line', compute='_compute_related_lines',
@@ -34,39 +35,62 @@ class sc_cash_summary(models.Model):
         string='# Penjualan', compute='_compute_related_lines')
     expense_line_count = fields.Integer(
         string='# Pengeluaran', compute='_compute_related_lines')
-
+    sale_line_drink_ids = fields.Many2many(
+        'sale.order.line',
+        string="Sale Lines Minuman",
+        compute="_compute_related_lines",
+        store=False,
+    )
     # -------------- Core --------------
+    @api.depends('date')
     def _compute_related_lines(self):
-        """Link semua order_line & pengeluaran_line yg jatuh di tanggal ini."""
         SaleLine = self.env['sale.order.line']
         ExpenseLine = self.env['pengeluaran.line']
+
+        TagPaket = self.env['product.tag'].search([('name', 'ilike', 'Paket')])
+        TagMinuman = self.env['product.tag'].search([('name', 'ilike', 'Minuman')])
 
         for rec in self:
             if not rec.date:
                 rec.sale_line_ids = False
+                rec.sale_line_drink_ids = False
                 rec.expense_line_ids = False
                 rec.sale_line_count = 0
+                rec.sale_line_drink_count = 0
                 rec.expense_line_count = 0
                 continue
 
             start_dt = datetime.combine(rec.date, time.min)
             end_dt = start_dt + relativedelta(days=1)
 
-            sale_lines = SaleLine.search([
+            domain_base = [
                 ('order_id.date_order', '>=', start_dt),
                 ('order_id.date_order', '<', end_dt),
                 ('order_id.state', 'in', ('draft', 'sale', 'done')),
-                ('display_type','!=','line_section')
+                ('display_type','!=','line_section'),
+            ]
+
+            # khusus Paket
+            sale_lines_paket = SaleLine.search(domain_base + [
+                ('product_id.product_tmpl_id.product_tag_ids', 'in', TagPaket.ids)
             ])
+
+            # khusus Minuman
+            sale_lines_minuman = SaleLine.search(domain_base + [
+                ('product_id.product_tmpl_id.product_tag_ids', 'in', TagMinuman.ids)
+            ])
+
+            # expense
             expense_lines = ExpenseLine.search([
                 ('pengeluaran_id.tanggal', '=', rec.date),
             ])
 
-            rec.sale_line_ids = sale_lines
+            rec.sale_line_ids = sale_lines_paket
+            rec.sale_line_drink_ids = sale_lines_minuman
             rec.expense_line_ids = expense_lines
-            rec.sale_line_count = len(sale_lines)
-            rec.expense_line_count = len(expense_lines)
 
+            rec.sale_line_count = len(sale_lines_paket)
+            rec.expense_line_count = len(expense_lines)
 
 
 
@@ -109,10 +133,11 @@ sales_line_agg AS (
         SUM(CASE WHEN so.tipe_pembayaran = 'Transfer'      THEN sol.price_subtotal ELSE 0 END) AS amount_transfer,
         SUM(CASE WHEN so.tipe_pembayaran = 'QRIS'          THEN sol.price_subtotal ELSE 0 END) AS amount_qris,
 
-        SUM(CASE WHEN tag_paket.id    IS NOT NULL THEN sol.price_subtotal ELSE 0 END) AS amount_paket,
-        SUM(CASE WHEN tag_minuman.id  IS NOT NULL THEN sol.price_subtotal ELSE 0 END) AS amount_minuman,
-
-        SUM(sol.price_subtotal) AS subtotal_lines
+        SUM(CASE WHEN tag_paket.id    IS NOT NULL THEN sol.price_unit ELSE 0 END) AS amount_paket,
+        SUM(CASE WHEN tag_minuman.id  IS NOT NULL THEN sol.price_unit ELSE 0 END) AS amount_minuman,
+        SUM(sol.discount_fixed) AS amount_tips,
+        SUM(sol.price_subtotal) AS subtotal_lines,
+        COUNT(DISTINCT so.partner_id) AS jumlah_tamu 
     FROM sale_order so
     JOIN sale_order_line sol      ON sol.order_id = so.id
     JOIN product_product  pp      ON pp.id = sol.product_id
@@ -151,14 +176,15 @@ SELECT
 
     COALESCE(sla.amount_paket,      0)              AS amount_paket,
     COALESCE(sla.amount_minuman,    0)              AS amount_minuman,
+    COALESCE(sla.amount_tips,    0)                 AS amount_tips,
     COALESCE(sla.amount_cash,       0)              AS amount_cash,
     COALESCE(sla.amount_debit_mandiri, 0)           AS amount_debit_mandiri,
     COALESCE(sla.amount_debit_bca,  0)              AS amount_debit_bca,
     COALESCE(sla.amount_transfer,   0)              AS amount_transfer,
     COALESCE(sla.amount_qris,       0)              AS amount_qris,
-
+    COALESCE(sla.jumlah_tamu,       0)              AS jumlah_tamu,
     /* revenue = subtotal baris  */
-    COALESCE(sla.subtotal_lines, 0) + COALESCE(ca.komisi, 0) AS revenue,
+    COALESCE(sla.subtotal_lines, 0) AS revenue,
     COALESCE(ea.expense,        0)                          AS expense,
 
     /* laba bersih */
