@@ -125,7 +125,7 @@ commission_agg AS (
 /* 3️⃣  Agregasi penjualan per‑tanggal (tanpa komisi) --------------------- */
 sales_line_agg AS (
     SELECT
-        DATE(so.date_order AT TIME ZONE 'Asia/Jakarta') AS date,
+         DATE(so.date_order)  AS date,
 
         SUM(CASE WHEN so.tipe_pembayaran = 'Cash'          THEN sol.price_subtotal ELSE 0 END) AS amount_cash,
         SUM(CASE WHEN so.tipe_pembayaran = 'Debit Mandiri' THEN sol.price_subtotal ELSE 0 END) AS amount_debit_mandiri,
