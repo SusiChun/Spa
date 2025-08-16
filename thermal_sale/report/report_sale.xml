@@ -30,7 +30,7 @@
                     <td>Kasir</td><td>:</td>
                     <td><t t-esc="o.user_id.name"/></td>
                 </tr>
-                <tr>
+                <tr  style="border-bottom:1px solid black;">
                     <td>Date</td><td>:</td>
                     <td><t t-esc="o.date_order"/></td>
                 </tr>
@@ -42,12 +42,16 @@
                     <td>Room</td><td>:</td>
                     <td><t t-esc="o.room"/></td>
                 </tr>
+                <tr>
+                    <td>Ket</td><td>:</td>
+                    <td><t t-esc="o.note"/></td>
+                </tr>
             </table>
-
+       <br/>
             <!-- DETAIL ITEM -->
-            <table style="width:100%;font-size:13px;margin-bottom:5px;">
+            <table style="width:100%;font-size:13px;margin-bottom:10px;border-bottom:1px solid black;">
                 <thead>
-                    <tr style="border-bottom:1px solid black;">
+                    <tr style="border-bottom:1px solid black;border-top:1px solid black;">
                         <th style="text-align:left;border-left:1px solid black;">ITEM NAME</th>
                         <th style="text-align:center;border-left:1px solid black;">QTY</th>
                         <th style="text-align:right;border-left:1px solid black;">AMOUNT</th>
@@ -55,10 +59,10 @@
                 </thead>
                 <tbody>
                     <tr t-foreach="o.order_line" t-as="line">
-                        <td><t t-esc="line.product_id.display_name"/></td>
-                        <td style="text-align:center;"><t t-esc="line.product_uom_qty"/></td>
-                        <td style="text-align:right;">
-                            <span t-esc="line.price_subtotal"
+                        <td  style="border-left:1px solid black;"><t t-esc="line.product_id.display_name"/></td>
+                        <td style="text-align:center;border-left:1px solid black;"><t t-esc="line.product_uom_qty"/></td>
+                        <td style="text-align:right;border-left:1px solid black;">
+                            <span t-esc="line.price_subtotal+line.discount_fixed"
                                   t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                         </td>
                     </tr>
@@ -66,18 +70,18 @@
             </table>
 
             <!-- TOTAL -->
-            <table style="width:100%;font-size:13px;border-top:1px solid black;">
+            <table style="width:100%;font-size:13px">
                 <tr>
                     <td>Subtotal</td>
                     <td style="text-align:right;">
-                        <span t-esc="o.amount_untaxed"
+                        <span t-esc="o.amount_untaxed_before_discount"
                               t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </td>
                 </tr>
                 <tr style="font-weight:bold;border-top:1px solid black;">
                     <td>TOTAL</td>
                     <td style="text-align:right;">
-                        <span t-esc="o.amount_total"
+                        <span t-esc="o.amount_untaxed_before_discount"
                               t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </td>
                 </tr>
