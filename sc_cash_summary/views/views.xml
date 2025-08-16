@@ -98,7 +98,7 @@
                   <field name="therapist_id"/>
                   <field name="product_id"/>
                   <field name="product_uom_qty"/>
-                  <field name="price_unit" sum="Total Paket"/>
+                  <field name="price_subtotal" sum="Total Paket"/>
                   <field name="discount_fixed" sum="Tips"/>
                 </tree>
               </field>

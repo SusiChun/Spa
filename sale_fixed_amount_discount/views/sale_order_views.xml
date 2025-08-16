@@ -7,6 +7,7 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
+
             <xpath
                 expr="//field[@name='order_line']/form//label[@for='discount']"
                 position="before"
@@ -24,6 +25,10 @@
                     name="discount_fixed"
                     groups="product.group_discount_per_so_line"
                 />
+            </xpath>
+            <xpath expr="//group[@name='sale_total']" position="inside">
+                <field
+                    name="amount_untaxed_after_discount"/>
             </xpath>
         </field>
     </record>

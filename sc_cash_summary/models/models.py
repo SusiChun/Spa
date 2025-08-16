@@ -133,8 +133,8 @@ sales_line_agg AS (
         SUM(CASE WHEN so.tipe_pembayaran = 'Transfer'      THEN sol.price_subtotal ELSE 0 END) AS amount_transfer,
         SUM(CASE WHEN so.tipe_pembayaran = 'QRIS'          THEN sol.price_subtotal ELSE 0 END) AS amount_qris,
 
-        SUM(CASE WHEN tag_paket.id    IS NOT NULL THEN sol.price_unit ELSE 0 END) AS amount_paket,
-        SUM(CASE WHEN tag_minuman.id  IS NOT NULL THEN sol.price_unit ELSE 0 END) AS amount_minuman,
+        SUM(CASE WHEN tag_paket.id    IS NOT NULL THEN  sol.price_subtotal ELSE 0 END) AS amount_paket,
+        SUM(CASE WHEN tag_minuman.id  IS NOT NULL THEN  sol.price_subtotal ELSE 0 END) AS amount_minuman,
         SUM(sol.discount_fixed) AS amount_tips,
         SUM(sol.price_subtotal) AS subtotal_lines,
         COUNT(DISTINCT so.partner_id) AS jumlah_tamu 

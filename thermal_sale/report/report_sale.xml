@@ -62,7 +62,7 @@
                         <td  style="border-left:1px solid black;"><t t-esc="line.product_id.display_name"/></td>
                         <td style="text-align:center;border-left:1px solid black;"><t t-esc="line.product_uom_qty"/></td>
                         <td style="text-align:right;border-left:1px solid black;">
-                            <span t-esc="line.price_subtotal+line.discount_fixed"
+                            <span t-esc="line.price_subtotal"
                                   t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                         </td>
                     </tr>
@@ -74,14 +74,14 @@
                 <tr>
                     <td>Subtotal</td>
                     <td style="text-align:right;">
-                        <span t-esc="o.amount_untaxed_before_discount"
+                        <span t-esc="o.amount_total"
                               t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </td>
                 </tr>
                 <tr style="font-weight:bold;border-top:1px solid black;">
                     <td>TOTAL</td>
                     <td style="text-align:right;">
-                        <span t-esc="o.amount_untaxed_before_discount"
+                        <span t-esc="o.amount_total"
                               t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </td>
                 </tr>

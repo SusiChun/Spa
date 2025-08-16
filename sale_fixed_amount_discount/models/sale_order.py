@@ -3,26 +3,6 @@
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-
-class SaleOrder(models.Model):
-    _inherit = "sale.order"
-
-    amount_untaxed_before_discount = fields.Monetary(
-        string="Untaxed Amount Before Discount",
-        compute="_compute_amount_untaxed_before_discount",
-        store=True,
-        currency_field="currency_id",
-    )
-
-    @api.depends('order_line.price_unit', 'order_line.product_uom_qty', 'order_line.display_type')
-    def _compute_amount_untaxed_before_discount(self):
-        for order in self:
-            total = 0.0
-            for line in order.order_line:
-                if not line.display_type:  # skip line_section / line_note
-                    total += line.price_unit * line.product_uom_qty
-            order.amount_untaxed_before_discount = total
-
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
@@ -30,32 +10,28 @@ class SaleOrderLine(models.Model):
         string="Tips",
         digits="Product Price",
         help="Fixed amount discount.",
+        related="product_id.standard_price"
     )
 
-    @api.onchange("discount")
-    def _onchange_discount_percent(self):
-        if self.discount:
-            total = self.product_uom_qty * self.price_unit
-            t_discount_fixed = (self.discount * total) / 100
 
-            if self.discount_fixed != t_discount_fixed:
-                self.discount_fixed = t_discount_fixed
+class SaleOrder(models.Model):
+    _inherit = "sale.order"
 
-    @api.onchange("discount_fixed")
-    def _onchange_discount_fixed(self):
-        if self.discount_fixed:
-            total = self.product_uom_qty * self.price_unit
-            t_discount = (self.discount_fixed / total) * 100
-            if self.discount != t_discount:
-                self.discount = t_discount
-
-  #todo 
-
-    @api.depends(
-        "product_uom_qty", "discount", "price_unit", "tax_id", "discount_fixed"
+    amount_untaxed_after_discount = fields.Monetary(
+        string="Total After Tips",
+        compute="_compute_amount_untaxed_after_discount",
+        store=True,
+        currency_field="currency_id",
     )
-    
-    def _prepare_invoice_line(self):
-        res = super(SaleOrderLine, self)._prepare_invoice_line()
-        res.update({"discount_fixed": self.discount_fixed})
-        return res
+
+    @api.depends('order_line.price_subtotal','order_line.discount_fixed')
+    def _compute_amount_untaxed_after_discount(self):
+        """
+        Ambil subtotal dari semua order_line (sudah termasuk diskon).
+        """
+        for order in self:
+            order.amount_untaxed_after_discount = sum(order.order_line.mapped('price_subtotal')) - sum(order.order_line.mapped('discount_fixed'))
+
+
+
+
