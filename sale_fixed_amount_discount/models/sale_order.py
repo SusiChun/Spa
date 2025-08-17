@@ -10,7 +10,7 @@ class SaleOrderLine(models.Model):
         string="Tips",
         digits="Product Price",
         help="Fixed amount discount.",
-        related="product_id.standard_price"
+        related="product_id.standard_price",store=True
     )
 
 
