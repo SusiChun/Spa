@@ -102,8 +102,9 @@ class sc_cash_summary(models.Model):
             /* ==========================================================
                1. AGREGASI PENJUALAN PER CHANNEL PEMBAYARAN
                ========================================================== */
-        WITH order_totals AS (
-            SELECT
+         WITH order_totals AS (
+
+ SELECT
                 s.id,  -- kunci unik SO
                 s.date_order::date  AS order_date,
                 s.komisi                                       AS commission,     -- 1× per SO
@@ -133,16 +134,19 @@ sales_line_agg AS (
         SUM(CASE WHEN so.tipe_pembayaran = 'Debit BCA'     THEN sol.price_subtotal ELSE 0 END) AS amount_debit_bca,
         SUM(CASE WHEN so.tipe_pembayaran = 'Transfer'      THEN sol.price_subtotal ELSE 0 END) AS amount_transfer,
         SUM(CASE WHEN so.tipe_pembayaran = 'QRIS'          THEN sol.price_subtotal ELSE 0 END) AS amount_qris,
-
-        SUM(CASE WHEN tag_paket.id    IS NOT NULL THEN  sol.price_subtotal ELSE 0 END) AS amount_paket,
-        SUM(CASE WHEN tag_minuman.id  IS NOT NULL THEN  sol.price_subtotal ELSE 0 END) AS amount_minuman,
-        SUM(sol.discount_fixed) AS amount_tips,
-        SUM(sol.price_subtotal) AS subtotal_lines,
-        COUNT(DISTINCT so.partner_id) AS jumlah_tamu 
+ SUM(CASE 
+        WHEN tag_paket.id IS NOT NULL AND discount_fixed > 0 THEN price_subtotal - discount_fixed
+        WHEN tag_paket.id IS NOT NULL AND discount_fixed <= 0 THEN price_subtotal
+        ELSE 0
+      END) AS amount_paket,
+      SUM(CASE WHEN tag_minuman.id  IS NOT NULL THEN  sol.price_subtotal ELSE 0 END) AS amount_minuman,
+      SUM(sol.discount_fixed) AS amount_tips,
+      SUM(sol.price_subtotal-sol.discount_fixed) AS subtotal_lines,
+      COUNT(so.id) AS jumlah_tamu 
     FROM sale_order so
-    JOIN sale_order_line sol      ON sol.order_id = so.id
-    JOIN product_product  pp      ON pp.id = sol.product_id
-    JOIN product_template pt      ON pt.id = pp.product_tmpl_id
+    LEFT JOIN sale_order_line sol      ON sol.order_id = so.id
+    LEFT JOIN product_product  pp      ON pp.id = sol.product_id
+    LEFT JOIN product_template pt      ON pt.id = pp.product_tmpl_id
     LEFT JOIN product_tag_product_template_rel rel_paket
            ON rel_paket.product_template_id = pt.id
     LEFT JOIN product_tag tag_paket
@@ -172,7 +176,7 @@ expense_agg AS (
 /* 5️⃣  Rekap gabungan ----------------------------------------------------- */
 SELECT
     row_number() OVER ()                            AS id,
-    COALESCE(sla.date, ca.date, ea.date)            AS date,
+    COALESCE(sla.date, ca.date, ea.date)::date AS date,
     COALESCE(ca.komisi,          0)                 AS komisi,
 
     COALESCE(sla.amount_paket,      0)              AS amount_paket,
@@ -189,12 +193,12 @@ SELECT
     COALESCE(ea.expense,        0)                          AS expense,
 
     /* laba bersih */
-    COALESCE(sla.subtotal_lines, 0) + COALESCE(ca.komisi, 0)
+    COALESCE(sla.subtotal_lines, 0)
       - COALESCE(ea.expense, 0)                             AS net
 
 FROM sales_line_agg sla
 FULL JOIN commission_agg ca  ON ca.date = sla.date
 FULL JOIN expense_agg    ea  ON ea.date = COALESCE(sla.date, ca.date)
-ORDER BY date 
+ORDER BY date desc
         );
     """)
