@@ -8,6 +8,7 @@ class sc_cash_summary(models.Model):
     _description = "Cash Summary"
     _auto = False
     _rec_name = "date"
+    _order = 'date desc'               #: default order field for searching results
 
     date = fields.Date(string="Tanggal", readonly=True)
     komisi = fields.Float(string="Komisi", readonly=True)
@@ -194,6 +195,6 @@ SELECT
 FROM sales_line_agg sla
 FULL JOIN commission_agg ca  ON ca.date = sla.date
 FULL JOIN expense_agg    ea  ON ea.date = COALESCE(sla.date, ca.date)
-ORDER BY date DESC
+ORDER BY date 
         );
     """)
