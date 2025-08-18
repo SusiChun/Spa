@@ -14,8 +14,9 @@
             >
                 <field
                     name="discount_fixed"
-                    groups="product.group_discount_per_so_line"
+                    invisible="1"
                 />
+                <field name="tips"/>
             </xpath>
             <xpath
                 expr="//field[@name='order_line']/tree/field[@name='discount']"
@@ -23,8 +24,10 @@
             >
                 <field
                     name="discount_fixed"
-                    groups="product.group_discount_per_so_line"
+                    invisible="1"
                 />
+                <field name="tips"/>
+
             </xpath>
             <xpath expr="//group[@name='sale_total']" position="inside">
                 <field

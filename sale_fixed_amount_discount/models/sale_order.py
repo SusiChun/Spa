@@ -12,12 +12,20 @@ class SaleOrderLine(models.Model):
         help="Fixed amount discount.",compute='compute_standard_price',
         store=True
     )
+    tips=fields.Float(
+        string="Tips",
+        help="Fixed amount discount.",compute='compute_standard_price',store=True
+    )
     @api.depends('product_id.standard_price')
     def compute_standard_price(self):
         for x in self:
             if x.product_id:
                 x.discount_fixed=x.product_id.standard_price
-
+    @api.depends('product_id.standard_price')
+    def compute_standard_price(self):
+        for x in self:
+            if x.product_id:
+                x.tips=x.product_id.standard_price
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
@@ -28,13 +36,13 @@ class SaleOrder(models.Model):
         currency_field="currency_id",
     )
 
-    @api.depends('order_line.price_subtotal','order_line.discount_fixed')
+    @api.depends('order_line.price_subtotal','order_line.tips')
     def _compute_amount_untaxed_after_discount(self):
         """
         Ambil subtotal dari semua order_line (sudah termasuk diskon).
         """
         for order in self:
-            order.amount_untaxed_after_discount = sum(order.order_line.mapped('price_subtotal')) - sum(order.order_line.mapped('discount_fixed'))
+            order.amount_untaxed_after_discount = sum(order.order_line.mapped('price_subtotal')) - sum(order.order_line.mapped('tips'))
 
 
 

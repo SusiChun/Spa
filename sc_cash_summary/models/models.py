@@ -135,13 +135,13 @@ sales_line_agg AS (
         SUM(CASE WHEN so.tipe_pembayaran = 'Transfer'      THEN sol.price_subtotal ELSE 0 END) AS amount_transfer,
         SUM(CASE WHEN so.tipe_pembayaran = 'QRIS'          THEN sol.price_subtotal ELSE 0 END) AS amount_qris,
  SUM(CASE 
-        WHEN tag_paket.id IS NOT NULL AND discount_fixed > 0 THEN price_subtotal - discount_fixed
-        WHEN tag_paket.id IS NOT NULL AND discount_fixed <= 0 THEN price_subtotal
+        WHEN tag_paket.id IS NOT NULL AND tips > 0 THEN price_subtotal - tips
+        WHEN tag_paket.id IS NOT NULL AND tips <= 0 THEN price_subtotal
         ELSE 0
       END) AS amount_paket,
       SUM(CASE WHEN tag_minuman.id  IS NOT NULL THEN  sol.price_subtotal ELSE 0 END) AS amount_minuman,
-      SUM(sol.discount_fixed) AS amount_tips,
-      SUM(sol.price_subtotal-sol.discount_fixed) AS subtotal_lines,
+      SUM(sol.tips) AS amount_tips,
+      SUM(sol.price_subtotal-sol.tips) AS subtotal_lines,
       COUNT(so.id) AS jumlah_tamu 
     FROM sale_order so
     LEFT JOIN sale_order_line sol      ON sol.order_id = so.id
