@@ -9,10 +9,14 @@ class SaleOrderLine(models.Model):
     discount_fixed = fields.Float(
         string="Tips",
         digits="Product Price",
-        help="Fixed amount discount.",
-        related="product_id.standard_price",store=True
+        help="Fixed amount discount.",compute='compute_standard_price',
+        store=True
     )
-
+    @api.depends('product_id.standard_price')
+    def compute_standard_price(self):
+        for x in self:
+            if x.product_id:
+                x.discount_fixed=x.product_id.standard_price
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
