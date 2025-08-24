@@ -4,15 +4,14 @@
 <template id="report_sale_document">
     <t t-call="thermal_sale.small_external_layout">
         <t t-set="o" t-value="o.with_context(lang=lang)"/>
-        <div class="page"
-             style="margin-top:10px;text-align:left;width:400px;background-color:white;font-size:16px;border:1px solid black;padding:5px;">
+        <div class="page" style="margin-top:10px;text-align:left;width:400px;background-color:white;font-size:16px;border:1px solid black;padding:5px;">
 
             <!-- HEADER TOKO -->
             <div style="text-align:center;border-bottom:1px solid black;padding-bottom:5px;margin-bottom:5px;">
                 <div style="font-size:16pt;font-weight:bold">
                     <t t-esc="o.company_id.name"/>
                 </div>
-                <div>
+                <div style="width:100%;font-size:13px;margin-bottom:15px;">
                     <t t-if="o.company_id.street"><span t-esc="o.company_id.street"/>, </t>
                     <t t-if="o.company_id.street2"><span t-esc="o.company_id.street2"/>, </t>
                     <t t-if="o.company_id.city"><span t-esc="o.company_id.city"/>, </t>
@@ -21,68 +20,65 @@
             </div>
 
             <!-- INFO ORDER -->
-            <table style="width:100%;font-size:13px;margin-bottom:5px;border-bottom:1px solid black;">
-                <tr>
-                    <td>Order No</td><td>:</td>
-                    <td><t t-esc="o.name"/></td>
+            <table style="width:100%;font-size:13px;margin-bottom:15px;border-bottom:1px solid black;">
+                <tr style="margin-bottom:15px;line-height: 2;">
+                    <td style="margin-bottom:15px;">Order No</td><td>:</td>
+                    <td style="margin-bottom:15px;"><t t-esc="o.name"/></td>
                 </tr>
-                <tr>
-                    <td>Kasir</td><td>:</td>
-                    <td><t t-esc="o.user_id.name"/></td>
+                <tr style="margin-bottom:15px;line-height: 2;">
+                    <td style="margin-bottom:15px;">Kasir</td><td>:</td>
+                    <td style="margin-bottom:15px;"><t t-esc="o.user_id.name"/></td>
                 </tr>
-                <tr  style="border-bottom:1px solid black;">
-                    <td>Date</td><td>:</td>
-                    <td><t t-esc="o.date_order"/></td>
+                <tr style="border-bottom:1px solid black;margin-bottom:15px;">
+                    <td style="margin-bottom:15px;line-height: 2;">Date</td><td>:</td>
+                    <td style="margin-bottom:15px;"><t t-esc="o.date_order"/></td>
                 </tr>
-                <tr>
-                    <td>By</td><td>:</td>
-                    <td><t t-esc="o.therapist_id.name"/></td>
+                <tr style="margin-bottom:15px;line-height: 2">
+                    <td style="margin-bottom:15px;">By</td><td>:</td>
+                    <td style="margin-bottom:15px;"><t t-esc="o.therapist_id.name"/></td>
                 </tr>
-                <tr>
-                    <td>Room</td><td>:</td>
-                    <td><t t-esc="o.room"/></td>
+                <tr style="margin-bottom:15px;line-height: 2">
+                    <td style="margin-bottom:15px;">Room</td><td>:</td>
+                    <td style="margin-bottom:15px;"><t t-esc="o.room"/></td>
                 </tr>
-                <tr>
-                    <td>Ket</td><td>:</td>
-                    <td><t t-esc="o.note"/></td>
+                <tr style="margin-bottom:15px;line-height: 2">
+                    <td style="margin-bottom:15px;">Ket</td><td>:</td>
+                    <td style="margin-bottom:15px;"><t t-esc="o.note"/></td>
                 </tr>
             </table>
        <br/>
             <!-- DETAIL ITEM -->
-            <table style="width:100%;font-size:13px;margin-bottom:10px;border-bottom:1px solid black;">
+            <table style="width:100%;font-size:13px;margin-bottom:15px;border-bottom:1px solid black;">
                 <thead>
-                    <tr style="border-bottom:1px solid black;border-top:1px solid black;">
+                    <tr style="border-bottom:1px solid black;border-top:1px solid black;margin-bottom:15px;line-height: 2">
                         <th style="text-align:left;border-left:1px solid black;">ITEM NAME</th>
                         <th style="text-align:center;border-left:1px solid black;">QTY</th>
                         <th style="text-align:right;border-left:1px solid black;">AMOUNT</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr t-foreach="o.order_line" t-as="line">
-                        <td  style="border-left:1px solid black;"><t t-esc="line.product_id.display_name"/></td>
+                    <tr t-foreach="o.order_line" t-as="line" style="margin-bottom:15px;line-height: 3">
+                        <td style="border-left:1px solid black;"><t t-esc="line.product_id.display_name"/></td>
                         <td style="text-align:center;border-left:1px solid black;"><t t-esc="line.product_uom_qty"/></td>
                         <td style="text-align:right;border-left:1px solid black;">
-                            <span t-esc="line.price_subtotal"
-                                  t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            <span t-esc="line.price_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                         </td>
                     </tr>
                 </tbody>
             </table>
 
             <!-- TOTAL -->
-            <table style="width:100%;font-size:13px">
+            <table style="width:100%;font-size:13px;margin-bottom:15px;line-height: 2">
                 <tr>
                     <td>Subtotal</td>
                     <td style="text-align:right;">
-                        <span t-esc="o.amount_total"
-                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                        <span t-esc="o.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                     </td>
                 </tr>
-                <tr style="font-weight:bold;border-top:1px solid black;">
+                <tr style="font-weight:bold;border-top:1px solid black;margin-bottom:15px;line-height: 2">
                     <td>TOTAL</td>
                     <td style="text-align:right;">
-                        <span t-esc="o.amount_total"
-                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                        <span t-esc="o.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                     </td>
                 </tr>
             </table>
