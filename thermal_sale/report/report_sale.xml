@@ -31,7 +31,11 @@
                 </tr>
                 <tr style="border-bottom:1px solid black;margin-bottom:15px;">
                     <td style="margin-bottom:15px;line-height: 2;">Date</td><td>:</td>
+<!--
                     <td style="margin-bottom:15px;"><t t-esc="o.date_order"/></td>
+-->
+                <td style="margin-bottom:15px;"><t t-esc="o.env['ir.qweb.field.datetime'].value_to_html(o.end_datetime,{'tz': user.tz or 'Asia/Jakarta'})"/></td>
+
                 </tr>
                 <tr style="margin-bottom:15px;line-height: 2">
                     <td style="margin-bottom:15px;">By</td><td>:</td>
@@ -79,6 +83,12 @@
                     <td>TOTAL</td>
                     <td style="text-align:right;">
                         <span t-esc="o.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                    </td>
+                </tr>
+                <tr>
+                   <td>Pembayaran</td>
+                    <td style="text-align:right;">
+                        <span t-esc="o.tipe_pembayaran"/>
                     </td>
                 </tr>
             </table>

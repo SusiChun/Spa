@@ -142,7 +142,7 @@ sales_line_agg AS (
       SUM(CASE WHEN tag_minuman.id  IS NOT NULL THEN  sol.price_subtotal ELSE 0 END) AS amount_minuman,
       SUM(sol.tips) AS amount_tips,
       SUM(sol.price_subtotal-sol.tips) AS subtotal_lines,
-      COUNT(so.id) AS jumlah_tamu 
+    COUNT(DISTINCT so.id) AS jumlah_tamu
     FROM sale_order so
     LEFT JOIN sale_order_line sol      ON sol.order_id = so.id
     LEFT JOIN product_product  pp      ON pp.id = sol.product_id
